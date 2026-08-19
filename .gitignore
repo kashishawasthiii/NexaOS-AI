@@ -1,0 +1,21 @@
+# Environment / secrets
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+backend/venv/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+.env
+backend/.env
