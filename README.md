@@ -122,3 +122,17 @@ Nexa AI can assist with task-related operations through natural language:
                                   ┌────────────────────┐
                                   │ OpenAI GPT-OSS 120B│
                                   └────────────────────┘
+                                  ```
+                                  ## 📸 Screenshots
+
+### 🏠 Dashboard
+
+![NexaOS AI Dashboard](screenshots/dashboard.png)
+
+### 📋 Task Management
+
+![NexaOS AI Task Management](screenshots/task-management.png)
+
+### 🤖 AI Assistant
+
+![Nexa AI Assistant](screenshots/ai-assistant.png)
