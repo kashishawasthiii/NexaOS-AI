@@ -3,3 +3,4 @@ uvicorn
 python-dotenv
 groq
 pydantic
+SQLAlchemy>=2.0,<3.0
