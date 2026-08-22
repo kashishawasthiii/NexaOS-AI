@@ -90,40 +90,11 @@ Nexa AI can assist with task-related operations through natural language:
 
 ## 🏗️ System Architecture
 
-```text
-                    ┌──────────────────────┐
-                    │      User            │
-                    │  Web Browser         │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   React Frontend     │
-                    │      + Vite          │
-                    └──────────┬───────────┘
-                               │
-                         HTTP / JSON
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   FastAPI Backend    │
-                    │      Python          │
-                    └──────────┬───────────┘
-                               │
-                ┌──────────────┴──────────────┐
-                │                             │
-                ▼                             ▼
-       ┌─────────────────┐          ┌─────────────────┐
-       │  Task APIs      │          │   AI Service    │
-       │  Task Management│          │   Groq API      │
-       └─────────────────┘          └────────┬────────┘
-                                             │
-                                             ▼
-                                  ┌────────────────────┐
-                                  │ OpenAI GPT-OSS 120B│
-                                  └────────────────────┘
-                                  ```
-                                  ## 📸 Screenshots
+The application follows a full-stack architecture where the React frontend communicates with the FastAPI backend, which handles task operations and communicates with the Groq AI service.
+
+---
+
+## 📸 Screenshots
 
 ### 🏠 Dashboard
 
@@ -136,3 +107,139 @@ Nexa AI can assist with task-related operations through natural language:
 ### 🤖 AI Assistant
 
 ![Nexa AI Assistant](screenshots/ai-assistant.png)
+
+---
+
+## 📁 Project Structure
+
+```text
+NexaOS-AI/
+│
+├── backend/
+│   ├── main.py
+│   ├── ai_service.py
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── screenshots/
+│   ├── dashboard.png
+│   ├── task-management.png
+│   └── ai-assistant.png
+│
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
+---
+
+## 🚀 How to Run
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/kashishawasthiii/NexaOS-AI.git
+cd NexaOS-AI
+```
+
+### 2. Backend Setup
+
+```bash
+cd backend
+python -m venv venv
+```
+
+Activate the virtual environment.
+
+**Windows:**
+
+```bash
+venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Create a `.env` file inside `backend/`:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+```
+
+Start the backend:
+
+```bash
+uvicorn main:app --reload
+```
+
+Backend will run at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### 3. Frontend Setup
+
+Open another terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend will run at:
+
+```text
+http://localhost:5173
+```
+
+---
+
+## 🔐 Environment Variables
+
+The project uses environment variables for API credentials.
+
+```env
+GROQ_API_KEY=your_groq_api_key
+```
+
+Never commit the `.env` file or expose API keys publicly.
+
+---
+
+## 🔮 Future Improvements
+
+- Persistent database integration
+- User authentication
+- Personalized AI recommendations
+- Task deadlines and reminders
+- Calendar integration
+- Productivity analytics
+- Voice-based AI interaction
+- Deployment using cloud infrastructure
+
+---
+
+## 👩‍💻 Author
+
+**Kashish Awasthi**
+
+NexaOS AI — AI-powered productivity workspace.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
