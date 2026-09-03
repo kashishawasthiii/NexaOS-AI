@@ -102,7 +102,7 @@ The application follows a full-stack architecture where the React frontend commu
 
 ### 📋 Task Management
 
-![NexaOS AI Task Management](screenshots/task-management.png)
+![NexaOS AI Task Management](screenshots/taskmanagement.png)
 
 ### 🤖 AI Assistant
 
