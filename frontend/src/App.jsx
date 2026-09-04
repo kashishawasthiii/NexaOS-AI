@@ -71,6 +71,8 @@ function App() {
   const [estimatedMinutes, setEstimatedMinutes] = useState(30);
   const [loading, setLoading] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [calendarDate, setCalendarDate] = useState(() => new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPriority, setFilterPriority] = useState("All");
@@ -889,6 +891,29 @@ function App() {
     );
   }
 
+  useEffect(() => {
+    const closeOnOutside = (event) => {
+      if (!event.target.closest(".calendar-picker-wrap")) setCalendarOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setCalendarOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
+
+  const pickCalendarDate = (date) => {
+    const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    setDueDate(iso);
+    setCalendarDate(new Date(date.getFullYear(), date.getMonth(), 1));
+    setCalendarOpen(false);
+    notify(`Due date selected: ${date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`);
+  };
+
   return (
     <div className="app-shell">
       {toast && <div className="toast">{toast}</div>}
@@ -906,6 +931,27 @@ function App() {
           <button onClick={() => scrollTo("overview")}>Overview</button>
           <button onClick={() => scrollTo("tasks")}>Tasks</button>
           <button onClick={() => scrollTo("assistant")}>AI Assistant</button>
+          <div className="calendar-picker-wrap">
+            <button
+              type="button"
+              className={`nav-calendar-button ${calendarOpen ? "active" : ""}`}
+              onClick={() => setCalendarOpen((open) => !open)}
+              aria-label="Open calendar"
+              title="Calendar"
+            >
+              <span className="calendar-icon">▣</span>
+              <span>Calendar</span>
+            </button>
+            {calendarOpen && (
+              <CompactCalendarPicker
+                monthDate={calendarDate}
+                tasks={tasks}
+                selectedDate={dueDate}
+                onMonthChange={setCalendarDate}
+                onSelect={pickCalendarDate}
+              />
+            )}
+          </div>
         </nav>
 
         <div className="user-area">
@@ -1443,6 +1489,33 @@ function App() {
         </section>
       </main>
 
+      <style>{`
+        .calendar-picker-wrap { position: relative; display: inline-flex; align-items: center; }
+        .nav-calendar-button { display:flex; align-items:center; gap:7px; border:1px solid transparent; background:transparent; color:inherit; padding:8px 10px; border-radius:10px; cursor:pointer; font:inherit; opacity:.78; }
+        .nav-calendar-button:hover, .nav-calendar-button.active { background:rgba(124,84,255,.12); border-color:rgba(124,84,255,.24); opacity:1; }
+        .calendar-icon { font-size:14px; line-height:1; }
+        .compact-calendar-dropdown { position:absolute; top:calc(100% + 10px); right:0; width:276px; padding:13px; z-index:1000; border:1px solid rgba(255,255,255,.1); border-radius:15px; background:rgba(20,17,32,.98); box-shadow:0 18px 45px rgba(0,0,0,.38); backdrop-filter:blur(18px); }
+        .compact-calendar-head { display:grid; grid-template-columns:30px 1fr 30px; align-items:center; gap:6px; margin-bottom:10px; }
+        .compact-calendar-head strong { text-align:center; font-size:13px; }
+        .compact-calendar-head button { width:30px; height:30px; border:0; border-radius:8px; background:rgba(255,255,255,.06); color:inherit; cursor:pointer; font-size:18px; }
+        .compact-calendar-head button:hover { background:rgba(124,84,255,.18); }
+        .compact-calendar-weekdays, .compact-calendar-days { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+        .compact-calendar-weekdays { margin-bottom:4px; }
+        .compact-calendar-weekdays span { text-align:center; font-size:9px; font-weight:700; opacity:.42; padding:3px 0; }
+        .compact-calendar-day { position:relative; height:29px; border:0; border-radius:7px; background:transparent; color:inherit; font-size:11px; cursor:pointer; }
+        .compact-calendar-day:hover { background:rgba(124,84,255,.16); }
+        .compact-calendar-day.muted { opacity:.24; }
+        .compact-calendar-day.today { box-shadow:inset 0 0 0 1px rgba(124,84,255,.7); font-weight:800; }
+        .compact-calendar-day.selected { background:linear-gradient(135deg,rgba(124,84,255,.95),rgba(157,109,255,.78)); color:#fff; font-weight:800; }
+        .compact-calendar-day i { position:absolute; width:4px; height:4px; border-radius:50%; left:50%; bottom:3px; transform:translateX(-50%); background:#bda7ff; }
+        .compact-calendar-day.selected i { background:#fff; }
+        .compact-calendar-today { width:100%; margin-top:9px; height:30px; border:1px solid rgba(124,84,255,.24); border-radius:8px; background:rgba(124,84,255,.08); color:inherit; font-size:11px; font-weight:700; cursor:pointer; }
+        .compact-calendar-today:hover { background:rgba(124,84,255,.16); }
+        @media (max-width: 800px) {
+          .compact-calendar-dropdown { right:auto; left:0; width:260px; }
+        }
+      `}</style>
+
       <footer className="site-footer">
         <span>NEXAOS AI</span>
         <span>A focused productivity workspace · v2.0</span>
@@ -1583,6 +1656,83 @@ function TaskRow({ task, onToggle, onEdit, onDelete, dateInfo }) {
         </button>
       </div>
     </article>
+  );
+}
+
+function CompactCalendarPicker({ monthDate, tasks, selectedDate, onMonthChange, onSelect }) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const previousMonthDays = new Date(year, month, 0).getDate();
+  const cells = [];
+
+  for (let index = 0; index < 42; index += 1) {
+    const offset = index - firstDay + 1;
+    let date;
+    let currentMonth = true;
+    if (offset < 1) {
+      date = new Date(year, month - 1, previousMonthDays + offset);
+      currentMonth = false;
+    } else if (offset > daysInMonth) {
+      date = new Date(year, month + 1, offset - daysInMonth);
+      currentMonth = false;
+    } else {
+      date = new Date(year, month, offset);
+    }
+    cells.push({ date, currentMonth });
+  }
+
+  const key = (date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const todayKey = key(new Date());
+  const taskDates = new Set(
+    tasks.filter((task) => task.due_date).map((task) => {
+      const d = new Date(task.due_date);
+      return Number.isNaN(d.getTime()) ? null : key(d);
+    }).filter(Boolean)
+  );
+
+  return (
+    <div className="compact-calendar-dropdown" role="dialog" aria-label="Calendar date picker">
+      <div className="compact-calendar-head">
+        <button type="button" onClick={() => onMonthChange(new Date(year, month - 1, 1))} aria-label="Previous month">‹</button>
+        <strong>{monthDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</strong>
+        <button type="button" onClick={() => onMonthChange(new Date(year, month + 1, 1))} aria-label="Next month">›</button>
+      </div>
+      <div className="compact-calendar-weekdays">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => <span key={`${day}-${index}`}>{day}</span>)}
+      </div>
+      <div className="compact-calendar-days">
+        {cells.map(({ date, currentMonth }, index) => {
+          const dateKey = key(date);
+          const isSelected = selectedDate === dateKey;
+          const isToday = todayKey === dateKey;
+          const hasTask = taskDates.has(dateKey);
+          return (
+            <button
+              type="button"
+              key={`${dateKey}-${index}`}
+              className={`compact-calendar-day ${currentMonth ? "" : "muted"} ${isToday ? "today" : ""} ${isSelected ? "selected" : ""}`}
+              onClick={() => onSelect(date)}
+              title={hasTask ? "Task due on this date" : "Select date"}
+            >
+              {date.getDate()}
+              {hasTask && <i aria-hidden="true" />}
+            </button>
+          );
+        })}
+      </div>
+      <button
+        type="button"
+        className="compact-calendar-today"
+        onClick={() => {
+          const today = new Date();
+          onMonthChange(today);
+          onSelect(today);
+        }}
+      >Today</button>
+    </div>
   );
 }
 
